@@ -20,11 +20,11 @@ const char* password = "";
 WiFiServer server(LISTEN_PORT);
 
 // Declare functions to be exposed to the API
-int rythmControl(String command);
+int rhythmControl(String command);
 int speedControl(String command);
 
 // Variables
-int rythmState = 0;
+int rhythmState = 0;
 int onBoardLedState = 0;
 float vibrateSpeed = 1;
 
@@ -37,7 +37,7 @@ void setup(void)
     //rest.variable("on_board_led", &onBoardLedState);
 
     // Function to be exposed
-    rest.function("rythm", rythmControl);
+    rest.function("rhythm", rhythmControl);
     rest.function("speed", speedControl);
 
     // Give name & ID to the device (ID should be 6 characters long)
@@ -66,7 +66,7 @@ void setup(void)
 
 void loop() {
     handleREST();
-    rythm();
+    rhythm();
 }
 
 void handleREST() {
@@ -78,11 +78,11 @@ void handleREST() {
     }
 }
 
-void rythm() {
-    if(rythmState > 0) {
+void rhythm() {
+    if(rhythmState > 0) {
         float delayQ = (2 - vibrateSpeed);
 
-        switch(rythmState) {
+        switch(rhythmState) {
             case 1:
                 flipOnBoardLedState();
                 delay(500 * delayQ);
@@ -99,9 +99,9 @@ void rythm() {
     }
 }
 
-int rythmControl(String command) {
+int rhythmControl(String command) {
     int state = command.toInt();
-    rythmState = state;
+    rhythmState = state;
 }
 
 int speedControl(String command) {
