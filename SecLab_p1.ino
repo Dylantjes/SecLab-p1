@@ -88,7 +88,7 @@ void handleREST() {
     if (client && client.available()) {
         rest.handle(client);
     } else {
-        delay(1);
+        delay(100);
     }
 }
 
