@@ -78,7 +78,7 @@ void loop() {
 
     if(vibrating > 0) {
         rhythm();
-    } else if(onBoardLedState > 0) {
+    } else if(onBoardLedState <= 0) {
         flipOnBoardLedState();
     }
 }
@@ -101,7 +101,7 @@ void rhythm() {
 
     switch(rhythmState) {
         case 0:
-            if(onBoardLedState <= 0) {
+            if(onBoardLedState > 0) {
                 flipOnBoardLedState();
             }
             break;
