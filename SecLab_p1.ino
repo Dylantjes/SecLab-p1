@@ -5,6 +5,7 @@
 
 // PINS
 #define PIN_BOARD_LED 0
+#define PIN_VIBRATOR 16
 
 // Create aREST instance
 aREST rest = aREST();
@@ -18,15 +19,20 @@ const char* password = "";
 
 // Create an instance of the server
 WiFiServer server(LISTEN_PORT);
+IPAddress ip(10, 1, 1, 2);
+IPAddress gateway(10,1,1,1);
+IPAddress subnet(255,255,255,252);
 
 // Declare functions to be exposed to the API
 int rhythmControl(String command);
 int speedControl(String command);
+int vibrationControl(String command);
 
 // Variables
 int rhythmState = 0;
 int onBoardLedState = 0;
 float vibrateSpeed = 1;
+int vibrating = 0;
 
 void setup(void)
 {
@@ -39,12 +45,14 @@ void setup(void)
     // Function to be exposed
     rest.function("rhythm", rhythmControl);
     rest.function("speed", speedControl);
+    rest.function("vibrating", vibrationControl);
 
     // Give name & ID to the device (ID should be 6 characters long)
     rest.set_id("1");
     rest.set_name("iot_prototype");
 
     // Connect to WiFi
+    WiFi.config(ip, gateway, subnet);
     WiFi.begin(ssid, password);
     while (WiFi.status() != WL_CONNECTED) {
         delay(500);
@@ -62,11 +70,17 @@ void setup(void)
 
     // Init pins
     pinMode(PIN_BOARD_LED, OUTPUT);
+    pinMode(PIN_VIBRATOR, OUTPUT);
 }
 
 void loop() {
     handleREST();
-    rhythm();
+
+    if(vibrating > 0) {
+        rhythm();
+    } else if(onBoardLedState > 0) {
+        flipOnBoardLedState();
+    }
 }
 
 void handleREST() {
@@ -79,23 +93,30 @@ void handleREST() {
 }
 
 void rhythm() {
-    if(rhythmState > 0) {
-        float delayQ = (2 - vibrateSpeed);
+    if(rhythmState < 0) {
+        rhythmState = 0;
+    }
 
-        switch(rhythmState) {
-            case 1:
+    float delayQ = (2 - vibrateSpeed);
+
+    switch(rhythmState) {
+        case 0:
+            if(onBoardLedState <= 0) {
                 flipOnBoardLedState();
-                delay(500 * delayQ);
-                flipOnBoardLedState();
-                delay(100 * delayQ);
-                flipOnBoardLedState();
-                delay(300 * delayQ);
-                break;
-            case 2:
-                flipOnBoardLedState();
-                delay(1500 * delayQ);
-                break;
-        }
+            }
+            break;
+        case 1:
+            flipOnBoardLedState();
+            delay(500 * delayQ);
+            flipOnBoardLedState();
+            delay(100 * delayQ);
+            flipOnBoardLedState();
+            delay(300 * delayQ);
+            break;
+        case 2:
+            flipOnBoardLedState();
+            delay(1500 * delayQ);
+            break;
     }
 }
 
@@ -117,12 +138,13 @@ int speedControl(String command) {
     vibrateSpeed = newSpeed;
 }
 
-void flipOnBoardLedState() {
-    if(onBoardLedState == 0) {
-        onBoardLedState = 1;
-    } else {
-        onBoardLedState = 0;
-    }
+int vibrationControl(String command) {
+    int state = command.toInt();
+    vibrating = state > 0 ? 1 : 0;
+}
 
+void flipOnBoardLedState() {
+    onBoardLedState = onBoardLedState <=0 ? 1 : 0;
     digitalWrite(PIN_BOARD_LED, onBoardLedState);
+    digitalWrite(PIN_VIBRATOR, onBoardLedState <= 0 ? 1 : 0);
 }
