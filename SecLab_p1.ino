@@ -11,7 +11,7 @@
 aREST rest = aREST();
 
 // WiFi parameters
-const char* ssid = "vibrator";
+const char* ssid = "smart_0eKvdy7Zqk";
 const char* password = "";
 
 // The port to listen for incoming TCP connections
